@@ -22,11 +22,13 @@ def import_version(pkg, min_ver, fail_msg=""):
     mod = None
     try:
         mod = importlib.import_module(pkg)
-        if Version(mod.__version__) < min_ver:
+        # workaround for Image not having __version__
+        version = getattr(mod, "__version__", 0) or getattr(mod, "VERSION", 0)
+        if Version(version) < min_ver:
             print(FAIL, "%s version %s or higher required, but %s installed."
-                  % (lib, min_ver, mod.__version__))
+                  % (lib, min_ver, version))
         else:
-            print(OK, '%s version %s' % (pkg, mod.__version__))
+            print(OK, '%s version %s' % (pkg, version))
     except ImportError:
         print(FAIL, '%s not installed. %s' % (pkg, fail_msg))
     return mod
@@ -58,3 +60,6 @@ import_version("pydot", "0", fail_msg="pydot is not installed. It is not require
                "but you will miss out on some plots. \nYou can install it using "
                "'pip install pydot' on python2, and 'pip install "
                "git+https://github.com/nlhepler/pydot.git' on python3.")
+
+import_version("Image", "0", fail_msg="The Image module is not installed."
+               " Please install the Pillow package, which provides it.")
